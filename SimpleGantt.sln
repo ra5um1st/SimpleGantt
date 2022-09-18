@@ -25,7 +25,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{64A2EE0E
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{033001C3-E487-4ED7-A1ED-7BC3AB41A32D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleGantt.Infrastructure", "SimpleGantt.Infrastructure\SimpleGantt.Infrastructure.csproj", "{AD6CABAA-9E40-4D78-A351-44DBE66C6502}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleGantt.Infrastructure", "SimpleGantt.Infrastructure\SimpleGantt.Infrastructure.csproj", "{AD6CABAA-9E40-4D78-A351-44DBE66C6502}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{125893D0-1512-4081-B298-0C876EDFB7B6}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

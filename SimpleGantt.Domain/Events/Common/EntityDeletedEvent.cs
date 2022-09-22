@@ -3,11 +3,11 @@ using SimpleGantt.Domain.Events.Abstractions;
 
 namespace SimpleGantt.Domain.Events.Common;
 
-public class EntityDeletedEvent : DomainEvent
+public class EntityDeletedEvent<TEntity> : DomainEvent where TEntity : Entity
 {
-    public Entity DeletedEntity { get; }
+    public TEntity DeletedEntity { get; }
 
-    public EntityDeletedEvent(Entity deletedEntity) : base()
+    public EntityDeletedEvent(TEntity deletedEntity) : base()
     {
         DeletedEntity = deletedEntity;
     }

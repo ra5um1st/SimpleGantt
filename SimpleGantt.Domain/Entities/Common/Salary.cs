@@ -1,13 +1,13 @@
 ﻿using System.Data.SqlTypes;
-using SimpleGantt.Domain.Entities.Base;
+using SimpleGantt.Domain.Entities.Abstractions;
 using SimpleGantt.Domain.Entities.DomainTypes;
 
 namespace SimpleGantt.Domain.Entities.Common;
 
 public class Salary : Entity
 {
-    public SqlMoney Value { get; set; }
-    public SalaryType SalaryType { get; set; }
+    public SqlMoney Value { get; private set; }
+    public SalaryType SalaryType { get; private set; }
 
     public Salary(SqlMoney value, SalaryType salaryType)
     {

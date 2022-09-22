@@ -1,12 +1,12 @@
 ﻿using System;
-using SimpleGantt.Domain.Entities.Base;
+using SimpleGantt.Domain.Entities.Abstractions;
 
 namespace SimpleGantt.Domain.Entities.Common;
 
 public class WorkTimeScedule : Entity
 {
-    public TimeOnly StartWorkTime { get; set; }
-    public TimeOnly FinishWorkTime { get; set; }
+    public TimeOnly StartWorkTime { get; private set; }
+    public TimeOnly FinishWorkTime { get; private set; }
 
     public WorkTimeScedule(TimeOnly startWorkTime, TimeOnly finishWorkTime)
     {

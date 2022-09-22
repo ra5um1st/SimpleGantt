@@ -32,6 +32,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleGantt.Domain.Tests", "SimpleGantt.Domain.Tests\SimpleGantt.Domain.Tests.csproj", "{180D15B2-FD8F-44E6-BBAF-FD90D6107609}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -64,6 +66,10 @@ Global
 		{AD6CABAA-9E40-4D78-A351-44DBE66C6502}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AD6CABAA-9E40-4D78-A351-44DBE66C6502}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AD6CABAA-9E40-4D78-A351-44DBE66C6502}.Release|Any CPU.Build.0 = Release|Any CPU
+		{180D15B2-FD8F-44E6-BBAF-FD90D6107609}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{180D15B2-FD8F-44E6-BBAF-FD90D6107609}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{180D15B2-FD8F-44E6-BBAF-FD90D6107609}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{180D15B2-FD8F-44E6-BBAF-FD90D6107609}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -79,6 +85,7 @@ Global
 		{620AAE48-2585-413A-A656-EF9B1721F530} = {3DF01EDF-B242-47CA-8342-FC5387940A0F}
 		{033001C3-E487-4ED7-A1ED-7BC3AB41A32D} = {3DF01EDF-B242-47CA-8342-FC5387940A0F}
 		{AD6CABAA-9E40-4D78-A351-44DBE66C6502} = {620AAE48-2585-413A-A656-EF9B1721F530}
+		{180D15B2-FD8F-44E6-BBAF-FD90D6107609} = {64A2EE0E-C1FF-4E77-ACDF-5A44543027A3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {463F1503-67B9-4DF0-8154-9B534F6C1791}

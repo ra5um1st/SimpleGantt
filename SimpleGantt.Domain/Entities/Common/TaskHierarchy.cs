@@ -1,4 +1,4 @@
-﻿using SimpleGantt.Domain.Entities.Base;
+﻿using SimpleGantt.Domain.Entities.Abstractions;
 
 namespace SimpleGantt.Domain.Entities.Common;
 
@@ -10,6 +10,6 @@ public class TaskHierarchy : Entity
         Child = child;
     }
 
-    public Task Parent { get; set; }
-    public Task Child { get; set; }
+    public Task Parent { get; private set; }
+    public Task Child { get; private set; }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using SimpleGantt.Domain.Events.Abstractions;
+using SimpleGantt.Domain.Events.Common;
 using SimpleGantt.Domain.Interfaces;
 
 namespace SimpleGantt.Domain.Entities.Abstractions;
@@ -9,7 +10,7 @@ public abstract class Entity : ISupportDomainEvents
 {
     protected readonly HashSet<DomainEvent> _domainEvents = new();
 
-    public long Id { get; set; }
+    public long Id { get; private set; }
     public IReadOnlyCollection<DomainEvent> DomainEvents => _domainEvents;
 
     public bool AddDomainEvent(DomainEvent @event)

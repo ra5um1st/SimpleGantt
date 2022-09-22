@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using SimpleGantt.Domain.Entities.Interfaces;
+using SimpleGantt.Domain.Events.Abstractions;
+using SimpleGantt.Domain.Interfaces;
 
 namespace SimpleGantt.Domain.Entities.Abstractions;
 
 public record DomainType(long Id) : ISupportDomainEvents
 {
-    protected readonly HashSet<EventArgs> _domainEvents = new();
-    public IReadOnlyCollection<EventArgs> DomainEvents => _domainEvents;
+    protected readonly HashSet<DomainEvent> _domainEvents = new();
+    public IReadOnlyCollection<DomainEvent> DomainEvents => _domainEvents;
 
-    public bool AddDomainEvent(EventArgs @event)
+    public bool AddDomainEvent(DomainEvent @event)
     {
         if (@event == null)
         {

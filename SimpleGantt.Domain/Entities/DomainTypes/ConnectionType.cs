@@ -1,4 +1,4 @@
-﻿using SimpleGantt.Domain.Entities.Base;
+﻿using SimpleGantt.Domain.Entities.Abstractions;
 
 namespace SimpleGantt.Domain.Entities.DomainTypes;
 

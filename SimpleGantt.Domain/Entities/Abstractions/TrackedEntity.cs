@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Xml.Linq;
 
 namespace SimpleGantt.Domain.Entities.Abstractions;
 
@@ -10,9 +9,8 @@ public abstract class TrackedEntity : NamedEntity
     //public User Creator { get; set; }
     //public User Updater { get; set; }
 
-
-    public DateTimeOffset Created { get; set; }
-    public DateTimeOffset Updated { get; set; }
+    public DateTimeOffset Created { get; private set; }
+    public DateTimeOffset Updated { get; private set; }
 
     public TrackedEntity(string name, DateTimeOffset created, DateTimeOffset updated) : base(name)
     {

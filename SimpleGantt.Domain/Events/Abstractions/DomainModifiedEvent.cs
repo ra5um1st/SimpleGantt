@@ -1,12 +1,12 @@
 ﻿namespace SimpleGantt.Domain.Events.Abstractions;
 
-public abstract class DomainModifiedEvent : DomainEvent
+public abstract class DomainModifiedEvent<TProperty> : DomainEvent
 {
     public string PropertyName { get; }
-    public object OldValue { get; }
-    public object NewValue { get; }
+    public TProperty OldValue { get; }
+    public TProperty NewValue { get; }
 
-    public DomainModifiedEvent(string propertyName, object oldValue, object newValue) : base()
+    public DomainModifiedEvent(string propertyName, TProperty oldValue, TProperty newValue) : base()
     {
         PropertyName = propertyName;
         OldValue = oldValue;

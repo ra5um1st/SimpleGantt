@@ -5,8 +5,8 @@ namespace SimpleGantt.Domain.Entities.Common;
 
 public class MaterialResource : Resource
 {
-    public SqlMoney Cost { get; set; }
-    public CurrencyType CurrencyType { get; set; }
+    public SqlMoney Cost { get; private set; }
+    public CurrencyType CurrencyType { get; private set; }
 
     public MaterialResource(string name, uint count, SqlMoney cost, CurrencyType currencyType) : base(name, count)
     {

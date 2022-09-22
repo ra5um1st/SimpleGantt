@@ -1,14 +1,17 @@
-﻿using SimpleGantt.Domain.Entities.Abstractions;
+﻿using System.Text.Json;
+using SimpleGantt.Domain.Entities.Abstractions;
 using SimpleGantt.Domain.Events.Abstractions;
 
 namespace SimpleGantt.Domain.Events.Common;
 
-public class EntityCreatedEvent : DomainEvent
+public class EntityCreatedEvent<TEntity> : DomainEvent where TEntity : Entity
 {
-    public Entity CreatedEntity { get; set; }
+    public TEntity CreatedEntity { get; }
+    public string Data { get; }
 
-    public EntityCreatedEvent(Entity createdEntity) : base()
+    public EntityCreatedEvent(TEntity createdEntity) : base()
     {
         CreatedEntity = createdEntity;
+        Data = JsonSerializer.Serialize(createdEntity);
     }
 }

@@ -4,12 +4,10 @@ namespace SimpleGantt.Domain.Entities.Common;
 
 public class Resource : TrackedEntity
 {
-    public string Name { get; set; }
-    public uint Count { get; set; }
+    public uint Count { get; private set; }
 
-    public Resource(string name, uint count)
+    public Resource(string name, uint count) : base(name)
     {
-        Name = name;
         Count = count;
     }
 }

@@ -1,26 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
 using SimpleGantt.Domain.Events.Abstractions;
-using SimpleGantt.Domain.Events.Common;
 using SimpleGantt.Domain.Interfaces;
 
 namespace SimpleGantt.Domain.Entities.Abstractions;
 
-public abstract class Entity : ISupportDomainEvents
+public abstract class Entity : IHasDomainEvents
 {
-    protected readonly HashSet<DomainEvent> _domainEvents = new();
+    private readonly List<DomainEvent> _domainEvents = new();
 
-    public long Id { get; private set; }
+    public long Id { get; protected set; }
+
     public IReadOnlyCollection<DomainEvent> DomainEvents => _domainEvents;
 
-    public bool AddDomainEvent(DomainEvent @event)
+    public void AddDomainEvent(DomainEvent @event)
     {
         if(@event == null)
         {
             throw new ArgumentNullException(nameof(@event));
         }
-
-        return _domainEvents.Add(@event);
+        
+        _domainEvents.Add(@event);
     }
 
     public void ClearDomainEvents()

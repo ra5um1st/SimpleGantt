@@ -1,13 +1,23 @@
 ﻿using System;
+using SimpleGantt.Domain.Entities.Common;
 using SimpleGantt.Domain.Events.Abstractions;
 using SimpleGantt.Domain.ValueObjects;
 
 namespace SimpleGantt.Domain.Events.Common.TaskEvents;
 
-public class TaskCreatedEvent : DomainEvent
+public record TaskCreatedEvent : DomainCreatedEvent<Task>
 {
-    public string Name { get; set; } = string.Empty;
-    public DateTimeOffset StartDate { get; set; }
-    public DateTimeOffset FinishDate { get; set; }
-    public Percentage ComplitionPercentage { get; set; } = 0;
+    public EntityName Name { get; }
+    public DateTimeOffset StartDate { get; }
+    public DateTimeOffset FinishDate { get; }
+    public Percentage CompletionPercentage { get; }
+
+
+    public TaskCreatedEvent(Task task) : base (task)
+    {
+        Name = task.Name;
+        StartDate = task.StartDate;
+        FinishDate = task.FinishDate;
+        CompletionPercentage = task.CompletionPercentage;
+    }
 }

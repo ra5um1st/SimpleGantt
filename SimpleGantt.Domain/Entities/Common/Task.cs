@@ -2,27 +2,34 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
-using System.Text.Json;
 using SimpleGantt.Domain.Entities.Abstractions;
-using SimpleGantt.Domain.Events.Abstractions;
+using SimpleGantt.Domain.Entities.DomainTypes;
 using SimpleGantt.Domain.Events.Common;
 using SimpleGantt.Domain.Events.Common.TaskEvents;
+using SimpleGantt.Domain.Exceptions.Common;
 using SimpleGantt.Domain.ValueObjects;
 
 namespace SimpleGantt.Domain.Entities.Common;
 
 public class Task : NamedEntity
 {
+    #region Fields
+
+    private HashSet<TaskConnection> _taskConnections = new HashSet<TaskConnection>();
+    private HashSet<TaskConnection> _taskHierarchy = new HashSet<TaskConnection>();
+
+    #endregion
+
     #region Properties
 
     public DateTimeOffset StartDate { get; private set; }
-    public DateTimeOffset FinishDate { get; private set; }
-    public Percentage CompletionPercentage { get; private set; } = 0;
 
-    private HashSet<TaskConnection> _taskConnections = new HashSet<TaskConnection>();
+    public DateTimeOffset FinishDate { get; private set; }
+
+    public Percentage CompletionPercentage { get; private set; }
+
     public IReadOnlyCollection<TaskConnection> TaskConnections => _taskConnections;
 
-    private HashSet<TaskConnection> _taskHierarchy = new HashSet<TaskConnection>();
     public IReadOnlyCollection<TaskConnection> TaskHierarchy => _taskHierarchy;
 
     [NotMapped]
@@ -32,7 +39,7 @@ public class Task : NamedEntity
     public bool HasConnections => _taskHierarchy.Any();
 
     [NotMapped]
-    public bool IsMainTask => !_taskHierarchy.Select(item => item.Child.Id).Contains(Id);
+    public bool IsMainTask => _taskHierarchy.Select(item => item.Child.Id != Id).Any();
 
     #endregion
 
@@ -40,70 +47,113 @@ public class Task : NamedEntity
 
     private Task() : base(string.Empty)
     {
-
+        CompletionPercentage = 0;
     }
 
-    public Task(
-        string name, 
-        DateTimeOffset startDate, 
-        DateTimeOffset finishDate, 
-        Percentage percentage) : base(name)
+    public Task(string name, DateTimeOffset startDate, DateTimeOffset finishDate, Percentage percentage) : base(name)
     {
         StartDate = startDate;
         FinishDate = finishDate;
-        CompletionPercentage = percentage ?? throw new ArgumentNullException(nameof(percentage));
+        CompletionPercentage = percentage ?? 0;
 
-        AddDomainEvent(new TaskCreatedEvent() { Name = name, ComplitionPercentage = percentage, StartDate = startDate, FinishDate = finishDate });
+        AddDomainEvent(new TaskCreatedEvent(this));
     }
 
     #endregion
 
     #region Methods
 
-    public bool ChangeStartDate(DateTimeOffset newDateTime)
+    // TODO: Change dates with constraints
+
+    public void ChangeStartDate(DateTimeOffset newDateTime)
     {
-        if(HasChilds || IsMainTask || HasConnections)
-        {
-            return false;
-        }
+        // TODO: Add buisness rules Start Date change
 
         StartDate = newDateTime;
-        _domainEvents.Add(new PropertyModifiedEvent<Task, DateTimeOffset>(this, nameof(StartDate), StartDate, newDateTime));
-
-        return true;
+        AddDomainEvent(new EntityModifiedEvent<Task, DateTimeOffset>(this, nameof(StartDate), StartDate, newDateTime));
     }
 
-    public Task RestoreFromEvents(IEnumerable<DomainEvent> events)
+    public void ChangeFinishDate(DateTimeOffset newDateTime)
     {
-        var task = new Task();
+        // TODO: Add buisness rules Finish Date change
 
-        foreach (var @event in events)
+        FinishDate = newDateTime;
+        AddDomainEvent(new EntityModifiedEvent<Task, DateTimeOffset>(this, nameof(FinishDate), FinishDate, newDateTime));
+    }
+
+    public void ChangeCompletionPercentage(Percentage newPercentage)
+    {
+        // TODO: Add buisness rules for Completion Percentage change
+
+        CompletionPercentage = newPercentage;
+        AddDomainEvent(new EntityModifiedEvent<Task, Percentage>(this, nameof(CompletionPercentage), CompletionPercentage, newPercentage));
+    }
+
+    public void ChangeName(string newName)
+    {
+        Name = newName;
+        AddDomainEvent(new EntityModifiedEvent<Task, string>(this, nameof(Name), Name, newName));
+    }
+
+    public void AddTaskConnection(Task child, ConnectionType connectionType)
+    {
+        if (HasTaskConnectionWithChild(child))
         {
-            switch (@event)
-            {
-                case TaskCreatedEvent taskCreatedEvent:
-                {
-                    task = new Task(
-                        taskCreatedEvent.Name, 
-                        taskCreatedEvent.StartDate, 
-                        taskCreatedEvent.FinishDate, 
-                        taskCreatedEvent.ComplitionPercentage);
-                    break;
-                }
-                case PropertyModifiedEvent<Task, DateTimeOffset> startDateModified:
-                {
-                    task.StartDate = startDateModified.NewValue;
-                    break;
-                }
-                default:
-                    break;
-            }
+            throw new AlreadyExistsException(this, child);
         }
 
-        return task;
+        _taskConnections.Add(new TaskConnection(this, child, connectionType));
     }
 
-    // TODO: Change dates with constraints
+    public void RemoveTaskConnection(Task child)
+    {
+        if (!HasTaskConnectionWithChild(child))
+        {
+            throw new NotExistException(this, child);
+        }
+
+        var taskConnection = _taskConnections.First(item => item.Parent.Id == Id && item.Child.Id == child.Id);
+        _taskConnections.Remove(taskConnection);
+    }
+
+    public bool HasTaskConnectionOfType(ConnectionType connectionType)
+    {
+        return _taskConnections
+                    .Select(item => item.ConnectionType.Name)
+                    .Any(item => item == connectionType.Name);
+    }
+
+    public bool HasTaskConnectionWithChild(Task child)
+    {
+        return _taskConnections
+                    .Select(item => item.Child.Id)
+                    .Any(item => item == child.Id);
+    }
+
+    public bool HasTaskConnectionWithChildOfType(Task child, ConnectionType connectionType)
+    {
+        return _taskConnections
+                    .Select(item => new { item.Child.Id, ConnectionTypeName =  item.ConnectionType.Name })
+                    .Any(item => item.Id == child.Id && item.ConnectionTypeName == connectionType.Name);
+    }
+
+    public bool HasTaskConnectionWithParentOfTYpe(Task parent, ConnectionType connectionType)
+    {
+        return _taskConnections
+                    .Select(item => new { item.Parent.Id, ConnectionTypeName = item.ConnectionType.Name })
+                    .Any(item => item.Id == parent.Id && item.ConnectionTypeName == connectionType.Name);
+    }
+
+
+    public void AddTaskHierarchy()
+    {
+
+    }
+
+    public void RemoveTaskHierarchy()
+    {
+
+    }
 
     #endregion
 }

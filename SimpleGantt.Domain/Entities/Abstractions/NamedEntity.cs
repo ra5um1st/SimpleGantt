@@ -1,10 +1,12 @@
-﻿namespace SimpleGantt.Domain.Entities.Abstractions;
+﻿using SimpleGantt.Domain.ValueObjects;
+
+namespace SimpleGantt.Domain.Entities.Abstractions;
 
 public abstract class NamedEntity : Entity
 {
-    public string Name { get; private set; }
+    public EntityName Name { get; protected set; }
 
-    public NamedEntity(string name)
+    public NamedEntity(EntityName name)
     {
         Name = name;
     }

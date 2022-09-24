@@ -5,19 +5,19 @@ using SimpleGantt.Domain.Interfaces;
 
 namespace SimpleGantt.Domain.Entities.Abstractions;
 
-public record DomainType(long Id) : ISupportDomainEvents
+public record DomainType(long Id) : IHasDomainEvents
 {
-    protected readonly HashSet<DomainEvent> _domainEvents = new();
+    private readonly HashSet<DomainEvent> _domainEvents = new();
     public IReadOnlyCollection<DomainEvent> DomainEvents => _domainEvents;
 
-    public bool AddDomainEvent(DomainEvent @event)
+    public void AddDomainEvent(DomainEvent @event)
     {
         if (@event == null)
         {
             throw new ArgumentNullException(nameof(@event));
         }
 
-        return _domainEvents.Add(@event);
+        _domainEvents.Add(@event);
     }
 
     public void ClearDomainEvents()

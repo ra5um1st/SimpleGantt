@@ -1,36 +1,36 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using SimpleGantt.Domain.Entities.Abstractions;
-using SimpleGantt.Domain.Entities.DomainTypes;
-using SimpleGantt.Domain.Events.Common;
-using SimpleGantt.Domain.Events.Common.TaskEvents;
-using SimpleGantt.Domain.Exceptions.Common;
+using SimpleGantt.Domain.Exceptions;
 using SimpleGantt.Domain.ValueObjects;
+using SimpleGantt.Domain.Interfaces;
+using SimpleGantt.Domain.Events;
 
-namespace SimpleGantt.Domain.Entities.Common;
+using static SimpleGantt.Domain.Events.Common.TaskEvents;
+using static SimpleGantt.Domain.Events.Common.DomainEvents;
+using SimpleGantt.Domain.Entities.Common;
 
-public class Task : NamedEntity
+namespace SimpleGantt.Domain.Entities;
+
+public sealed class Task : AggregateRoot, INamable
 {
     #region Fields
 
-    private HashSet<TaskConnection> _taskConnections = new HashSet<TaskConnection>();
-    private HashSet<TaskConnection> _taskHierarchy = new HashSet<TaskConnection>();
+    private readonly HashSet<TaskConnection> _taskConnections = new();
+    private readonly HashSet<TaskHierarchy> _taskHierarchy = new();
 
     #endregion
 
     #region Properties
 
+    public EntityName Name { get; private set; } = string.Empty;
     public DateTimeOffset StartDate { get; private set; }
-
     public DateTimeOffset FinishDate { get; private set; }
-
-    public Percentage CompletionPercentage { get; private set; }
-
+    public Percentage CompletionPercentage { get; private set; } = 0;
+    public Project Project { get; private set; }
     public IReadOnlyCollection<TaskConnection> TaskConnections => _taskConnections;
-
-    public IReadOnlyCollection<TaskConnection> TaskHierarchy => _taskHierarchy;
+    public IReadOnlyCollection<TaskHierarchy> TaskHierarchy => _taskHierarchy;
 
     [NotMapped]
     public bool HasChilds => _taskConnections.Any();
@@ -45,18 +45,20 @@ public class Task : NamedEntity
 
     #region Constructors
 
-    private Task() : base(string.Empty)
+    private Task()
     {
-        CompletionPercentage = 0;
+        Project = null!;
     }
 
-    public Task(string name, DateTimeOffset startDate, DateTimeOffset finishDate, Percentage percentage) : base(name)
+    public Task(Project project, EntityName name, DateTimeOffset startDate, DateTimeOffset finishData, Percentage percentage)
     {
+        Project = project;
+        Name = name;
         StartDate = startDate;
-        FinishDate = finishDate;
-        CompletionPercentage = percentage ?? 0;
+        FinishDate = finishData;
+        CompletionPercentage = percentage;
 
-        AddDomainEvent(new TaskCreatedEvent(this));
+        AddDomainEvent(new TaskCreated(Id, project.Id, name, startDate, finishData, percentage));
     }
 
     #endregion
@@ -68,91 +70,164 @@ public class Task : NamedEntity
     public void ChangeStartDate(DateTimeOffset newDateTime)
     {
         // TODO: Add buisness rules Start Date change
-
         StartDate = newDateTime;
-        AddDomainEvent(new EntityModifiedEvent<Task, DateTimeOffset>(this, nameof(StartDate), StartDate, newDateTime));
+        AddDomainEvent(new StartDateChanged(Id, newDateTime));
     }
 
     public void ChangeFinishDate(DateTimeOffset newDateTime)
     {
         // TODO: Add buisness rules Finish Date change
-
         FinishDate = newDateTime;
-        AddDomainEvent(new EntityModifiedEvent<Task, DateTimeOffset>(this, nameof(FinishDate), FinishDate, newDateTime));
+        AddDomainEvent(new FinishDateChanged(Id, newDateTime));
     }
 
     public void ChangeCompletionPercentage(Percentage newPercentage)
     {
         // TODO: Add buisness rules for Completion Percentage change
-
         CompletionPercentage = newPercentage;
-        AddDomainEvent(new EntityModifiedEvent<Task, Percentage>(this, nameof(CompletionPercentage), CompletionPercentage, newPercentage));
+        AddDomainEvent(new CompletionPercentageChanged(Id, newPercentage));
     }
 
-    public void ChangeName(string newName)
+    public void ChangeName(EntityName newName)
     {
         Name = newName;
-        AddDomainEvent(new EntityModifiedEvent<Task, string>(this, nameof(Name), Name, newName));
+        AddDomainEvent(new NameChanged(Id, newName));
     }
 
-    public void AddTaskConnection(Task child, ConnectionType connectionType)
+    public void AddConnection(TaskConnection connection)
     {
-        if (HasTaskConnectionWithChild(child))
+        if (HasConnectionWithChild(connection.Child))
         {
-            throw new AlreadyExistsException(this, child);
+            throw new DomainExistsException(this, connection.Child);
         }
 
-        _taskConnections.Add(new TaskConnection(this, child, connectionType));
+        _taskConnections.Add(connection);
     }
 
-    public void RemoveTaskConnection(Task child)
+    public void RemoveConnection(TaskConnection connection)
     {
-        if (!HasTaskConnectionWithChild(child))
+        if (!HasConnectionWithChild(connection.Child))
         {
-            throw new NotExistException(this, child);
+            throw new DomainNotExistException(this, connection.Child);
         }
 
-        var taskConnection = _taskConnections.First(item => item.Parent.Id == Id && item.Child.Id == child.Id);
-        _taskConnections.Remove(taskConnection);
+        _taskConnections.Remove(connection);
     }
 
-    public bool HasTaskConnectionOfType(ConnectionType connectionType)
+    public bool HasConnectionOfType(ConnectionType connectionType)
     {
         return _taskConnections
                     .Select(item => item.ConnectionType.Name)
                     .Any(item => item == connectionType.Name);
     }
 
-    public bool HasTaskConnectionWithChild(Task child)
+    public bool HasConnectionWithChild(Task child)
     {
         return _taskConnections
                     .Select(item => item.Child.Id)
                     .Any(item => item == child.Id);
     }
 
-    public bool HasTaskConnectionWithChildOfType(Task child, ConnectionType connectionType)
+    public bool HasConnectionWithChildOfType(Task child, ConnectionType connectionType)
     {
         return _taskConnections
-                    .Select(item => new { item.Child.Id, ConnectionTypeName =  item.ConnectionType.Name })
+                    .Select(item => new { item.Child.Id, ConnectionTypeName = item.ConnectionType.Name })
                     .Any(item => item.Id == child.Id && item.ConnectionTypeName == connectionType.Name);
     }
 
-    public bool HasTaskConnectionWithParentOfTYpe(Task parent, ConnectionType connectionType)
+    public bool HasConnectionWithParentOfTYpe(Task parent, ConnectionType connectionType)
     {
         return _taskConnections
                     .Select(item => new { item.Parent.Id, ConnectionTypeName = item.ConnectionType.Name })
                     .Any(item => item.Id == parent.Id && item.ConnectionTypeName == connectionType.Name);
     }
 
-
-    public void AddTaskHierarchy()
+    public TaskConnection GetConnectionByChild(Task child)
     {
-
+        return TaskConnections.First(
+            item => item.Parent.Id == Id &&
+            item.Child.Id == child.Id);
     }
 
-    public void RemoveTaskHierarchy()
+    public void AddHierarchy(TaskHierarchy hierarchy)
     {
+        if (HasHierarchyWithChild(hierarchy.Child))
+        {
+            throw new DomainExistsException();
+        }
 
+        _taskHierarchy.Add(hierarchy);
+    }
+
+    public void RemoveHierarchy(TaskHierarchy hierarchy) 
+    {
+        if (!HasHierarchyWithChild(hierarchy.Child))
+        {
+            throw new DomainExistsException();
+        }
+
+        _taskHierarchy.Remove(hierarchy); 
+    }
+
+    private bool HasHierarchyWithChild(Task child)
+    {
+        return _taskHierarchy.Any(item => item.Parent.Id == Id && item.Child.Id == child.Id);
+    }
+
+    public TaskHierarchy GetHierarchyByChild(Task child)
+    {
+        return _taskHierarchy.First(
+            item => item.Parent.Id == Id && 
+            item.Child.Id == child.Id);
+    }
+
+    public static Task RestoreFromEvents(IEnumerable<DomainEvent> events)
+    {
+        var task = new Task();
+
+        foreach (var @event in events)
+        {
+            task.When(@event);
+        }
+
+        return task;
+    }
+
+    protected override void When(DomainEvent @event)
+    {
+        switch (@event)
+        {
+            case TaskCreated taskCreated:
+            {
+                Name = taskCreated.Name;
+                StartDate = taskCreated.StartDate;
+                FinishDate = taskCreated.FinishDate;
+                CompletionPercentage = taskCreated.CompletionPercentage;
+                break;
+            }
+            case TaskRemoved taskRemoved:
+            {
+                IsRemoved = true;
+                break;
+            }
+            case NameChanged nameChanged:
+            {
+                Name = nameChanged.NewEntityName;
+                break;
+            }
+            case StartDateChanged startDateChanged:
+            {
+                StartDate = startDateChanged.NewStartDate;
+                break;
+            }
+            case FinishDateChanged finishDateChanged:
+            {
+                FinishDate = finishDateChanged.NewFinishDate;
+                break;
+            }
+            default:
+                break;
+        }
     }
 
     #endregion

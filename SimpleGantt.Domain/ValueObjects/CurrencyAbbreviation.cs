@@ -1,11 +1,12 @@
 ﻿using System;
+using SimpleGantt.Domain.Interfaces;
 
 namespace SimpleGantt.Domain.ValueObjects;
 
-public record CurrencyAbbreviation
+public record CurrencyAbbreviation : IValueObject<string>
 {
-    private string _value;
-    private int _maxLength = 3;
+    public string Value { get; }
+    private const int _maxLength = 3;
 
     public CurrencyAbbreviation(string value)
     {
@@ -26,7 +27,7 @@ public record CurrencyAbbreviation
             throw new ArgumentException("Currency abbreviation must be english ASCII");
         }
 
-        _value = value;
+        Value = value;
     }
 
     private bool IsUppercase(string value)
@@ -55,13 +56,6 @@ public record CurrencyAbbreviation
         return true;
     }
 
-    public static implicit operator string(CurrencyAbbreviation currencyAbbreviation)
-    {
-        return currencyAbbreviation._value;
-    }
-
-    public static implicit operator CurrencyAbbreviation(string value)
-    {
-        return new CurrencyAbbreviation(value);
-    }
+    public static implicit operator string(CurrencyAbbreviation CurrencyAbbreviation) => CurrencyAbbreviation.Value;
+    public static implicit operator CurrencyAbbreviation(string value) => new(value);
 }

@@ -10,7 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Exceptions\TaskExceptions\" />
+    <Folder Include="Entities\EventSourcing\" />
   </ItemGroup>
 
 </Project>

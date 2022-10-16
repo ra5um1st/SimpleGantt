@@ -1,7 +1,5 @@
-﻿using SimpleGantt.Domain.Entities.Abstractions;
-using SimpleGantt.Domain.Entities.DomainTypes;
+﻿namespace SimpleGantt.Domain.Entities;
 
-namespace SimpleGantt.Domain.Entities.Common;
 public class WeekWorkSceduleDay : Entity
 {
     public WorkWeekScedule WeekWorkScedule { get; private set; }

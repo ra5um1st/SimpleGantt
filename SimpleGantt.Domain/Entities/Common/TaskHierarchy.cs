@@ -1,6 +1,4 @@
-﻿using SimpleGantt.Domain.Entities.Abstractions;
-
-namespace SimpleGantt.Domain.Entities.Common;
+﻿namespace SimpleGantt.Domain.Entities;
 
 public class TaskHierarchy : Entity
 {

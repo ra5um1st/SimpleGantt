@@ -1,14 +1,16 @@
-﻿using SimpleGantt.Domain.Entities.Abstractions;
+﻿using System;
+using SimpleGantt.Domain.ValueObjects;
 
-namespace SimpleGantt.Domain.Entities.DomainTypes;
+namespace SimpleGantt.Domain.Entities;
 
 public record SalaryType : DomainType
 {
-    public CurrencyType CurrencyType { get; init; }
-    public UnitTimeType UnitTimeType { get; init; }
+    public CurrencyType CurrencyType { get; }
+    public UnitOfTimeType UnitTimeType { get; }
 
-    public SalaryType(long Id, CurrencyType currencyType, UnitTimeType unitTimeType) : base(Id)
+    public SalaryType(Guid id, EntityName name, CurrencyType currencyType, UnitOfTimeType unitTimeType) : base(id, name)
     {
+        Name = name;
         CurrencyType = currencyType;
         UnitTimeType = unitTimeType;
     }

@@ -1,13 +1,13 @@
-﻿using SimpleGantt.Domain.Entities.Abstractions;
+﻿using System;
 using SimpleGantt.Domain.ValueObjects;
 
-namespace SimpleGantt.Domain.Entities.DomainTypes;
+namespace SimpleGantt.Domain.Entities;
 
-public record CurrencyType : NamedDomainType
+public record CurrencyType : DomainType
 {
     public CurrencyAbbreviation Abbreviation { get; init; }
 
-    public CurrencyType(long Id, EntityName name, CurrencyAbbreviation abbreviation) : base(Id, name)
+    public CurrencyType(Guid id, EntityName name, CurrencyAbbreviation abbreviation) : base(id, name)
     {
         Abbreviation = abbreviation;
     }

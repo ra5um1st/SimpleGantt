@@ -1,13 +1,16 @@
-﻿using SimpleGantt.Domain.Entities.Abstractions;
+﻿using SimpleGantt.Domain.Interfaces;
+using SimpleGantt.Domain.ValueObjects;
 
-namespace SimpleGantt.Domain.Entities.Common;
+namespace SimpleGantt.Domain.Entities;
 
-public class Resource : TrackedEntity
+public class Resource : Entity, INamable
 {
+    public EntityName Name { get; private set; } = string.Empty;
     public uint Count { get; private set; }
 
-    public Resource(string name, uint count) : base(name)
+    public Resource(EntityName name, uint count)
     {
+        Name = name;
         Count = count;
     }
 }

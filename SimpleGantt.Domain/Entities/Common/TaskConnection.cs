@@ -1,7 +1,4 @@
-﻿using SimpleGantt.Domain.Entities.Abstractions;
-using SimpleGantt.Domain.Entities.DomainTypes;
-
-namespace SimpleGantt.Domain.Entities.Common;
+﻿namespace SimpleGantt.Domain.Entities;
 
 public class TaskConnection : Entity
 {

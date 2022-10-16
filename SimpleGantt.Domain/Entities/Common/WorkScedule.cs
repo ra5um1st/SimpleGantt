@@ -1,14 +1,17 @@
-﻿using SimpleGantt.Domain.Entities.Abstractions;
+﻿using SimpleGantt.Domain.Interfaces;
+using SimpleGantt.Domain.ValueObjects;
 
-namespace SimpleGantt.Domain.Entities.Common;
+namespace SimpleGantt.Domain.Entities;
 
-public class WorkScedule : TrackedEntity
+public class WorkScedule : Entity, INamable
 {
+    public EntityName Name { get; private set; }
     public WorkTimeScedule WorkTimeScedule { get; private set; }
     public WorkWeekScedule WorkWeekScedule { get; private set; }
 
-    public WorkScedule(string name, WorkTimeScedule workTimeScedule, WorkWeekScedule workWeekScedule) : base(name)
+    public WorkScedule(EntityName name, WorkTimeScedule workTimeScedule, WorkWeekScedule workWeekScedule)
     {
+        Name = name;
         WorkTimeScedule = workTimeScedule;
         WorkWeekScedule = workWeekScedule;
     }

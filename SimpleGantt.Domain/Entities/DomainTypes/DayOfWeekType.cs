@@ -3,9 +3,9 @@ using SimpleGantt.Domain.ValueObjects;
 
 namespace SimpleGantt.Domain.Entities;
 
-public record ConnectionType : DomainType
+public record DayOfWeekType : DomainType
 {
-    public ConnectionType(Guid Id, EntityName Name) : base(Id, Name)
+    public DayOfWeekType(Guid id, EntityName name) : base(id, name)
     {
     }
 }

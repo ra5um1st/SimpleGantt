@@ -1,15 +1,16 @@
 ﻿using System;
+using SimpleGantt.Domain.Interfaces;
 
 namespace SimpleGantt.Domain.ValueObjects;
 
-public record class EntityName
+public record class EntityName : IValueObject<string>
 {
-    private string _value;
-    private int _maxLength = 1000;
+    public string Value { get; }
+    private const int _maxLength = 1000;
 
     public EntityName(string value)
     {
-        if (string.IsNullOrEmpty(value))
+        if (value == null)
         {
             throw new ArgumentNullException(nameof(value));
         }
@@ -18,16 +19,10 @@ public record class EntityName
             throw new ArgumentException($"Length of Entity Name can not be more than {_maxLength}");
         }
 
-        _value = value;
+        Value = value;
     }
 
-    public static implicit operator string(EntityName entityName)
-    {
-        return entityName._value;
-    }
 
-    public static implicit operator EntityName(string value)
-    {
-        return new EntityName(value);
-    }
+    public static implicit operator string(EntityName entityName) => entityName.Value;
+    public static implicit operator EntityName(string value) => new(value);
 }

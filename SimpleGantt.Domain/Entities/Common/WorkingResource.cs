@@ -1,4 +1,4 @@
-﻿namespace SimpleGantt.Domain.Entities.Common;
+﻿namespace SimpleGantt.Domain.Entities;
 
 public class WorkingResource : Resource
 {

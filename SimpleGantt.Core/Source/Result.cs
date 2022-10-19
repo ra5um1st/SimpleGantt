@@ -4,26 +4,26 @@ namespace SimpleGantt.Core
 {
     public struct Result<T>
     {
-        public bool IsSuccess { get; private set; }
+        public bool Successed { get; private set; }
         public Exception Exception { get; private set; }
         public T Value { get; private set; }
 
         public static Result<T> Success(T value) => new Result<T>()
         {
             Value = value,
-            IsSuccess = true
+            Successed = true
         };
 
         public static Result<T> Failure(Exception exception) => new Result<T>()
         { 
             Exception = exception, 
-            IsSuccess = false 
+            Successed = false 
         };
 
         public static Result<T> Failure(string message) => new Result<T>() 
         {
             Exception = new FailureResultException(message),
-            IsSuccess = false
+            Successed = false
         };
     }
 

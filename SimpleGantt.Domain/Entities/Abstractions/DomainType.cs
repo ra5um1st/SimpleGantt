@@ -4,4 +4,7 @@ using SimpleGantt.Domain.ValueObjects;
 
 namespace SimpleGantt.Domain.Entities;
 
-public record DomainType(Guid Id, EntityName Name) : IEntity, INamable;
+public record DomainType(EntityName Name) : IEntity, INamable
+{
+    public Guid Id { get; }
+}

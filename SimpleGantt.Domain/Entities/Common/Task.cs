@@ -6,10 +6,9 @@ using SimpleGantt.Domain.Exceptions;
 using SimpleGantt.Domain.ValueObjects;
 using SimpleGantt.Domain.Interfaces;
 using SimpleGantt.Domain.Events;
-
+using SimpleGantt.Domain.Entities.Common;
 using static SimpleGantt.Domain.Events.Common.TaskEvents;
 using static SimpleGantt.Domain.Events.Common.DomainEvents;
-using SimpleGantt.Domain.Entities.Common;
 
 namespace SimpleGantt.Domain.Entities;
 
@@ -58,7 +57,7 @@ public sealed class Task : AggregateRoot, INamable
         FinishDate = finishData;
         CompletionPercentage = percentage;
 
-        AddDomainEvent(new TaskCreated(Id, project.Id, name, startDate, finishData, percentage));
+        AddDomainEvent(new TaskCreated(Id, name, startDate, finishData, percentage));
     }
 
     #endregion
@@ -70,13 +69,22 @@ public sealed class Task : AggregateRoot, INamable
     public void ChangeStartDate(DateTimeOffset newDateTime)
     {
         // TODO: Add buisness rules Start Date change
+        if (newDateTime == StartDate) return;
         StartDate = newDateTime;
         AddDomainEvent(new StartDateChanged(Id, newDateTime));
+    }
+
+    public override void Remove()
+    {
+        if (Removed) throw new DomainException($"Task with id {Id} has already removed");
+        Removed = true;
+        AddDomainEvent(new TaskRemoved(Id));
     }
 
     public void ChangeFinishDate(DateTimeOffset newDateTime)
     {
         // TODO: Add buisness rules Finish Date change
+        if (newDateTime == FinishDate) return;
         FinishDate = newDateTime;
         AddDomainEvent(new FinishDateChanged(Id, newDateTime));
     }
@@ -84,12 +92,14 @@ public sealed class Task : AggregateRoot, INamable
     public void ChangeCompletionPercentage(Percentage newPercentage)
     {
         // TODO: Add buisness rules for Completion Percentage change
+        if (newPercentage == CompletionPercentage) return;
         CompletionPercentage = newPercentage;
         AddDomainEvent(new CompletionPercentageChanged(Id, newPercentage));
     }
 
     public void ChangeName(EntityName newName)
     {
+        if (newName == Name) return;
         Name = newName;
         AddDomainEvent(new NameChanged(Id, newName));
     }
@@ -98,7 +108,7 @@ public sealed class Task : AggregateRoot, INamable
     {
         if (HasConnectionWithChild(connection.Child))
         {
-            throw new DomainExistsException(this, connection.Child);
+            throw new EntityExistsException(nameof(connection));
         }
 
         _taskConnections.Add(connection);
@@ -108,7 +118,7 @@ public sealed class Task : AggregateRoot, INamable
     {
         if (!HasConnectionWithChild(connection.Child))
         {
-            throw new DomainNotExistException(this, connection.Child);
+            throw new DomainNotExistException(nameof(connection));
         }
 
         _taskConnections.Remove(connection);
@@ -153,7 +163,7 @@ public sealed class Task : AggregateRoot, INamable
     {
         if (HasHierarchyWithChild(hierarchy.Child))
         {
-            throw new DomainExistsException();
+            throw new EntityExistsException(nameof(hierarchy));
         }
 
         _taskHierarchy.Add(hierarchy);
@@ -163,7 +173,7 @@ public sealed class Task : AggregateRoot, INamable
     {
         if (!HasHierarchyWithChild(hierarchy.Child))
         {
-            throw new DomainExistsException();
+            throw new EntityExistsException(nameof(hierarchy));
         }
 
         _taskHierarchy.Remove(hierarchy); 
@@ -181,7 +191,7 @@ public sealed class Task : AggregateRoot, INamable
             item.Child.Id == child.Id);
     }
 
-    public static Task RestoreFromEvents(IEnumerable<DomainEvent> events)
+    public static Task RestoreFrom(IEnumerable<DomainEvent> events)
     {
         var task = new Task();
 
@@ -207,7 +217,7 @@ public sealed class Task : AggregateRoot, INamable
             }
             case TaskRemoved taskRemoved:
             {
-                IsRemoved = true;
+                Removed = true;
                 break;
             }
             case NameChanged nameChanged:
@@ -223,6 +233,11 @@ public sealed class Task : AggregateRoot, INamable
             case FinishDateChanged finishDateChanged:
             {
                 FinishDate = finishDateChanged.NewFinishDate;
+                break;
+            }
+            case CompletionPercentageChanged percentageChanged:
+            {
+                CompletionPercentage = percentageChanged.NewCompletionPercentage;
                 break;
             }
             default:

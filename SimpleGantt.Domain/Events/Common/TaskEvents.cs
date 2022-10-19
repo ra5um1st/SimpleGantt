@@ -1,6 +1,5 @@
 ﻿using System;
 using SimpleGantt.Domain.Entities;
-using SimpleGantt.Domain.Entities.Common;
 using SimpleGantt.Domain.ValueObjects;
 
 namespace SimpleGantt.Domain.Events.Common;
@@ -10,7 +9,6 @@ public static class TaskEvents
     public record TaskCreated
     (
         Guid TaskId,
-        Guid ProjectId,
         EntityName Name,
         DateTimeOffset StartDate,
         DateTimeOffset FinishDate,
@@ -45,7 +43,8 @@ public static class TaskEvents
         Guid MainTaskId,
         Guid ChildTaskId,
         DateTimeOffset NewFinishDate,
-        DateTimeOffset NewChildFinishDate
+        DateTimeOffset NewChildFinishDate,
+        ConnectionType ConnectionType
     ) : DomainEvent;
 
     public record BothStartDatesChanged
@@ -53,7 +52,8 @@ public static class TaskEvents
         Guid MainTaskId,
         Guid ChildTaskId,
         DateTimeOffset NewStartDate,
-        DateTimeOffset NewChildStartDate
+        DateTimeOffset NewChildStartDate,
+        ConnectionType ConnectionType
     ) : DomainEvent;
 
     public record FinishAndStartDatesChanged
@@ -61,7 +61,8 @@ public static class TaskEvents
         Guid MainTaskId,
         Guid ChildTaskId,
         DateTimeOffset NewFinishDate,
-        DateTimeOffset NewChildStartDate
+        DateTimeOffset NewChildStartDate,
+        ConnectionType ConnectionType
     ) : DomainEvent;
 
     public record StartAndFinishDatesChanged

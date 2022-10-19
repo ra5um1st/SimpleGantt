@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using SimpleGantt.Domain.Events;
+using SimpleGantt.Domain.Exceptions;
+using static SimpleGantt.Domain.Events.Common.TaskEvents;
 
 namespace SimpleGantt.Domain.Entities;
 
@@ -10,7 +12,9 @@ public abstract class AggregateRoot : Entity
 
     public IReadOnlyCollection<DomainEvent> DomainEvents => _domainEvents;
     public long Version { get; private set; } = -1;
-    public bool IsRemoved { get; protected set; } = false;
+    public bool Removed { get; protected set; } = false;
+
+    public abstract void Remove();
 
     protected void AddDomainEvent(DomainEvent @event)
     {

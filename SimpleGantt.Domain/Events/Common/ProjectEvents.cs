@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data.SqlTypes;
 using SimpleGantt.Domain.Entities;
 using SimpleGantt.Domain.ValueObjects;
 
@@ -6,23 +7,7 @@ namespace SimpleGantt.Domain.Events.Common;
 
 public static class ProjectEvents
 {
-    public record TaskAddedToProject
-    (
-        Guid ProjectId,
-        Guid TaskId,
-        EntityName Name,
-        DateTimeOffset StartDate,
-        DateTimeOffset FinishDate,
-        Percentage CompletionPercentage
-    ) : DomainEvent;
-
-    public record TaskRemovedFromProject
-    (
-        Guid ProjectId,
-        Guid TaskId
-    ) : DomainEvent;
-
-    public record ResourceAddedToProject
+    public record ResourceCreated
     (
         Guid ProjectId,
         Guid ResourceId,
@@ -30,7 +15,27 @@ public static class ProjectEvents
         uint Count
     ) : DomainEvent;
 
-    public record ResourceRemovedFromProject
+    public record MaterialResourceAdded
+    (
+        Guid ProjectId,
+        Guid ResourceId,
+        EntityName Name,
+        uint Count,
+        SqlMoney Cost,
+        CurrencyType CurrencyType
+    ) : ResourceCreated(ProjectId, ResourceId, Name, Count);
+
+    public record WorkingResourceAdded
+    (
+        Guid ProjectId,
+        Guid ResourceId,
+        EntityName Name,
+        uint Count,
+        WorkScedule WorkScedule,
+        Salary Salary
+    ) : ResourceCreated(ProjectId, ResourceId, Name, Count);
+
+    public record ResourceRemoved
     (
         Guid ProjectId,
         Guid ResourceId
@@ -70,11 +75,33 @@ public static class ProjectEvents
     (
         Guid ProjectId,
         EntityName Name,
-        DateTimeOffset CreatedAt
+        DateTimeOffset ProjectCreatedAt
     ) : DomainEvent;
 
     public record ProjectRemoved
     (
         Guid ProjectId
+    ) : DomainEvent;
+
+    public record TaskResourceAdded
+    (
+        Guid TaskId,
+        Guid ResourceId,
+        Guid TaskResourceId,
+        uint Count
+    ) : DomainEvent;
+
+    public record TaskResourceAmountChanged
+    (
+        Guid TaskId,
+        Guid TaskResourceId,
+        uint Count
+    ) : DomainEvent;
+
+    public record TaskResourceRemoved
+    (
+        Guid TaskId,
+        Guid ResourceId,
+        Guid TaskResourceId
     ) : DomainEvent;
 }

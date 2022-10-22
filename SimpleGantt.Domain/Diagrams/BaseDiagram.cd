@@ -1,0 +1,164 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="SimpleGantt.Domain.Entities.MaterialResource" Collapsed="true">
+    <Position X="6" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAQAAAAAAAAAA=</HashCode>
+      <FileName>Entities\Common\MaterialResource.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SimpleGantt.Domain.Entities.Resource" Collapsed="true">
+    <Position X="7.25" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Entities\Common\Resource.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="SimpleGantt.Domain.Entities.Salary">
+    <Position X="10" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAgAAAAAAA=</HashCode>
+      <FileName>Entities\Common\Salary.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SimpleGantt.Domain.Entities.Task" BaseTypeListCollapsed="true">
+    <Position X="18.25" Y="2.75" Width="2" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <AssociationLine Name="TaskConnections" Type="SimpleGantt.Domain.Entities.TaskConnection" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="20.25" Y="5.125" />
+        <Point X="22.5" Y="5.125" />
+        <Point X="22.5" Y="6" />
+      </Path>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>IQBCcAAyACAmAAAAAAEADAQAAgAIAABBIAQAAEABgAA=</HashCode>
+      <FileName>Entities\Common\Task.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Property Name="TaskConnections" />
+      <Property Name="TaskHierarchy" />
+    </ShowAsCollectionAssociation>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="SimpleGantt.Domain.Entities.TaskConnection">
+    <Position X="21.75" Y="6" Width="1.5" />
+    <AssociationLine Name="Child" Type="SimpleGantt.Domain.Entities.Task" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="21.75" Y="6.938" />
+        <Point X="19.792" Y="6.938" />
+        <Point X="19.792" Y="6.232" />
+      </Path>
+    </AssociationLine>
+    <AssociationLine Name="Parent" Type="SimpleGantt.Domain.Entities.Task" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="21.75" Y="6.688" />
+        <Point X="20.063" Y="6.688" />
+        <Point X="20.063" Y="6.232" />
+      </Path>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAIAAAAAAQAAIAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Entities\Common\TaskConnection.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Child" />
+      <Property Name="Parent" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="SimpleGantt.Domain.Entities.TaskHierarchy">
+    <Position X="15" Y="6" Width="1.5" />
+    <AssociationLine Name="Parent" Type="SimpleGantt.Domain.Entities.Task" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="16.5" Y="7.125" />
+        <Point X="18.833" Y="7.125" />
+        <Point X="18.833" Y="6.232" />
+      </Path>
+    </AssociationLine>
+    <AssociationLine Name="Child" Type="SimpleGantt.Domain.Entities.Task" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="16.5" Y="7.014" />
+        <Point X="18.5" Y="7.014" />
+        <Point X="18.5" Y="6.232" />
+      </Path>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAIAAAAAAQAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Entities\Common\TaskHierarchy.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Parent" />
+      <Property Name="Child" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="SimpleGantt.Domain.Entities.WorkingResource">
+    <Position X="8.25" Y="4" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAA=</HashCode>
+      <FileName>Entities\Common\WorkingResource.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="WorkScedule" />
+      <Property Name="Salary" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="SimpleGantt.Domain.Entities.WorkScedule" BaseTypeListCollapsed="true">
+    <Position X="10" Y="8" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAIAAAAAAAAAAA=</HashCode>
+      <FileName>Entities\Common\WorkScedule.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="WorkWeekScedule" />
+    </ShowAsAssociation>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="SimpleGantt.Domain.Entities.WorkWeekScedule" BaseTypeListCollapsed="true">
+    <Position X="6.25" Y="9" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAACAIAACAAAAQCAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Entities\Common\WorkWeekScedule.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Property Name="WorkDays" />
+    </ShowAsCollectionAssociation>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="SimpleGantt.Domain.Entities.WorkDay">
+    <Position X="6.25" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAABAAAAAAABAAAAAAAAAAAAAAAAAAAIAAAAEAAAAAA=</HashCode>
+      <FileName>Entities\Common\WorkWeekSceduleDay.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="WorkWeekScedule" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="SimpleGantt.Domain.Entities.Common.Project" BaseTypeListCollapsed="true">
+    <Position X="12.25" Y="1.75" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <AssociationLine Name="Tasks" Type="SimpleGantt.Domain.Entities.Task" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="13.75" Y="3.125" />
+        <Point X="16" Y="3.125" />
+        <Point X="16" Y="3.125" />
+        <Point X="18.25" Y="3.125" />
+      </Path>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>AAoAJCAAIiAACAAAAKAABAQAAAAAAAAAAAAoAAQBAAA=</HashCode>
+      <FileName>Entities\Common\Project.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Property Name="Tasks" />
+      <Property Name="Resources" />
+    </ShowAsCollectionAssociation>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

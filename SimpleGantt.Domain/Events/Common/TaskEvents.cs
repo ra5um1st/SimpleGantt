@@ -8,6 +8,7 @@ public static class TaskEvents
 {
     public record TaskCreated
     (
+        Guid ProjectId,
         Guid TaskId,
         EntityName Name,
         DateTimeOffset StartDate,
@@ -17,10 +18,11 @@ public static class TaskEvents
 
     public record TaskRemoved
     (
+        Guid ProjectId,
         Guid TaskId
     ) : DomainEvent;
 
-    public record StartDateChanged
+    public record StartDateChanged  
     (
         Guid TaskId,
         DateTimeOffset NewStartDate

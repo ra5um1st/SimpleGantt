@@ -1,15 +1,18 @@
-﻿using System;
-using SimpleGantt.Domain.ValueObjects;
+﻿using SimpleGantt.Domain.ValueObjects;
 
 namespace SimpleGantt.Domain.Entities;
 
 public record ConnectionType(EntityName Name) : DomainType(Name)
 {
-    public const string StartStart = "StartStart";
-    public const string StartFinish = "StartFinish";
-    public const string FinishStart = "FinishStart";
-    public const string FinishFinish = "FinishFinish";
+    public static ConnectionType StartStart { get; } = new(1, nameof(StartStart));
+    public static ConnectionType StartFinish { get; } = new(2, nameof(StartFinish));
+    public static ConnectionType FinishStart { get; } = new(3, nameof(FinishStart));
+    public static ConnectionType FinishFinish { get; } = new(4, nameof(FinishFinish));
+
+    private ConnectionType(long id, EntityName name) : this(name)
+    {
+        Id = id;
+    }
 
     public static implicit operator string(ConnectionType connectionType) => connectionType.Name;
-    public static implicit operator ConnectionType(string value) => new(new EntityName(value));
 }

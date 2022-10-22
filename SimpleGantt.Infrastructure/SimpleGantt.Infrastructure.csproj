@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SimpleGantt.Core\SimpleGantt.Application.csproj" />
+    <ProjectReference Include="..\SimpleGantt.Application\SimpleGantt.Application.csproj" />
   </ItemGroup>
 
 </Project>

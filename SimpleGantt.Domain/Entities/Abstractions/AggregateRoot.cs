@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using SimpleGantt.Domain.Events;
 using SimpleGantt.Domain.Exceptions;
-using static SimpleGantt.Domain.Events.Common.TaskEvents;
 
 namespace SimpleGantt.Domain.Entities;
 
@@ -14,7 +13,13 @@ public abstract class AggregateRoot : Entity
     public long Version { get; private set; } = -1;
     public bool Removed { get; protected set; } = false;
 
-    public abstract void Remove();
+    public AggregateRoot(Guid id) : base(id) { }
+
+    public virtual void Remove()
+    {
+        if (Removed) throw new DomainException($"Entity with id {Id} has already removed");
+        Removed = true;
+    }
 
     protected void AddDomainEvent(DomainEvent @event)
     {

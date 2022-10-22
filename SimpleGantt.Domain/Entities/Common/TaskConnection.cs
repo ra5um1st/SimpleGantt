@@ -1,4 +1,6 @@
-﻿namespace SimpleGantt.Domain.Entities;
+﻿using System;
+
+namespace SimpleGantt.Domain.Entities;
 
 public class TaskConnection : Entity
 {
@@ -6,7 +8,7 @@ public class TaskConnection : Entity
     public Task Child { get; private set; }
     public ConnectionType ConnectionType { get; private set; }
 
-    public TaskConnection(Task parent, Task child, ConnectionType connectionType)
+    public TaskConnection(Guid id, Task parent, Task child, ConnectionType connectionType) : base(id)
     {
         Parent = parent;
         Child = child;

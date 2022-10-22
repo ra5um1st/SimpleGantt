@@ -16,59 +16,60 @@ public sealed class Task : AggregateRoot, INamable
 {
     #region Fields
 
-    private readonly HashSet<TaskConnection> _taskConnections = new();
-    private readonly HashSet<TaskHierarchy> _taskHierarchy = new();
+    private readonly HashSet<TaskConnection> _connections = new();
+    private readonly HashSet<TaskHierarchy> _hierarchy = new();
+    private readonly HashSet<TaskResource> _resources = new();
 
     #endregion
 
     #region Properties
 
-    public EntityName Name { get; private set; } = string.Empty;
+    public EntityName Name { get; private set; }
     public DateTimeOffset StartDate { get; private set; }
     public DateTimeOffset FinishDate { get; private set; }
-    public Percentage CompletionPercentage { get; private set; } = 0;
+    public Percentage CompletionPercentage { get; private set; }
     public Project Project { get; private set; }
-    public IReadOnlyCollection<TaskConnection> TaskConnections => _taskConnections;
-    public IReadOnlyCollection<TaskHierarchy> TaskHierarchy => _taskHierarchy;
+    public IReadOnlyCollection<TaskConnection> Connections => _connections;
+    public IReadOnlyCollection<TaskHierarchy> Hierarchy => _hierarchy;
+    public IReadOnlyCollection<TaskResource> Resources => _resources;
 
     [NotMapped]
-    public bool HasChilds => _taskConnections.Any();
+    public bool HasChilds => _connections.Any();
 
     [NotMapped]
-    public bool HasConnections => _taskHierarchy.Any();
+    public bool HasConnections => _hierarchy.Any();
 
     [NotMapped]
-    public bool IsMainTask => _taskHierarchy.Select(item => item.Child.Id != Id).Any();
+    public bool IsMainTask => _hierarchy.Select(item => item.Child.Id != Id).Any();
 
     #endregion
 
     #region Constructors
 
-    private Task()
+    private Task() : base(Guid.Empty)
     {
         Project = null!;
+        Name = string.Empty;
+        CompletionPercentage = 0;
     }
 
-    public Task(Project project, EntityName name, DateTimeOffset startDate, DateTimeOffset finishData, Percentage percentage)
+    internal Task(Guid id, Project project, EntityName name, DateTimeOffset startDate, DateTimeOffset finishData, Percentage percentage) : base(id)
     {
-        Project = project;
+        Project = project ?? throw new ArgumentNullException(nameof(Project));
         Name = name;
         StartDate = startDate;
         FinishDate = finishData;
         CompletionPercentage = percentage;
 
-        AddDomainEvent(new TaskCreated(Id, name, startDate, finishData, percentage));
+        AddDomainEvent(new TaskCreated(Project.Id, Id, Name, StartDate, FinishDate, CompletionPercentage));
     }
 
     #endregion
 
     #region Methods
 
-    // TODO: Change dates with constraints
-
     public void ChangeStartDate(DateTimeOffset newDateTime)
     {
-        // TODO: Add buisness rules Start Date change
         if (newDateTime == StartDate) return;
         StartDate = newDateTime;
         AddDomainEvent(new StartDateChanged(Id, newDateTime));
@@ -78,12 +79,11 @@ public sealed class Task : AggregateRoot, INamable
     {
         if (Removed) throw new DomainException($"Task with id {Id} has already removed");
         Removed = true;
-        AddDomainEvent(new TaskRemoved(Id));
+        AddDomainEvent(new TaskRemoved(Project.Id, Id));
     }
 
     public void ChangeFinishDate(DateTimeOffset newDateTime)
     {
-        // TODO: Add buisness rules Finish Date change
         if (newDateTime == FinishDate) return;
         FinishDate = newDateTime;
         AddDomainEvent(new FinishDateChanged(Id, newDateTime));
@@ -108,10 +108,10 @@ public sealed class Task : AggregateRoot, INamable
     {
         if (HasConnectionWithChild(connection.Child))
         {
-            throw new EntityExistsException(nameof(connection));
+            throw new DomainExistsException(nameof(connection));
         }
 
-        _taskConnections.Add(connection);
+        _connections.Add(connection);
     }
 
     public void RemoveConnection(TaskConnection connection)
@@ -121,40 +121,60 @@ public sealed class Task : AggregateRoot, INamable
             throw new DomainNotExistException(nameof(connection));
         }
 
-        _taskConnections.Remove(connection);
+        _connections.Remove(connection);
+    }
+
+    public void AddTaskResource(TaskResource taskResource)
+    {
+        if (_resources.Contains(taskResource))
+        {
+            throw new DomainExistsException(nameof(taskResource));
+        }
+
+        _resources.Add(taskResource);
+    }
+
+    public void RemoveTaskResource(TaskResource taskResource)
+    {
+        if (!_resources.Contains(taskResource))
+        {
+            throw new DomainNotExistException(nameof(taskResource));
+        }
+
+        _resources.Remove(taskResource);
     }
 
     public bool HasConnectionOfType(ConnectionType connectionType)
     {
-        return _taskConnections
+        return _connections
                     .Select(item => item.ConnectionType.Name)
                     .Any(item => item == connectionType.Name);
     }
 
     public bool HasConnectionWithChild(Task child)
     {
-        return _taskConnections
+        return _connections
                     .Select(item => item.Child.Id)
                     .Any(item => item == child.Id);
     }
 
     public bool HasConnectionWithChildOfType(Task child, ConnectionType connectionType)
     {
-        return _taskConnections
+        return _connections
                     .Select(item => new { item.Child.Id, ConnectionTypeName = item.ConnectionType.Name })
                     .Any(item => item.Id == child.Id && item.ConnectionTypeName == connectionType.Name);
     }
 
     public bool HasConnectionWithParentOfTYpe(Task parent, ConnectionType connectionType)
     {
-        return _taskConnections
+        return _connections
                     .Select(item => new { item.Parent.Id, ConnectionTypeName = item.ConnectionType.Name })
                     .Any(item => item.Id == parent.Id && item.ConnectionTypeName == connectionType.Name);
     }
 
     public TaskConnection GetConnectionByChild(Task child)
     {
-        return TaskConnections.First(
+        return Connections.First(
             item => item.Parent.Id == Id &&
             item.Child.Id == child.Id);
     }
@@ -163,30 +183,30 @@ public sealed class Task : AggregateRoot, INamable
     {
         if (HasHierarchyWithChild(hierarchy.Child))
         {
-            throw new EntityExistsException(nameof(hierarchy));
+            throw new DomainExistsException(nameof(hierarchy));
         }
 
-        _taskHierarchy.Add(hierarchy);
+        _hierarchy.Add(hierarchy);
     }
 
     public void RemoveHierarchy(TaskHierarchy hierarchy) 
     {
         if (!HasHierarchyWithChild(hierarchy.Child))
         {
-            throw new EntityExistsException(nameof(hierarchy));
+            throw new DomainNotExistException(nameof(hierarchy));
         }
 
-        _taskHierarchy.Remove(hierarchy); 
+        _hierarchy.Remove(hierarchy); 
     }
 
     private bool HasHierarchyWithChild(Task child)
     {
-        return _taskHierarchy.Any(item => item.Parent.Id == Id && item.Child.Id == child.Id);
+        return _hierarchy.Any(item => item.Parent.Id == Id && item.Child.Id == child.Id);
     }
 
     public TaskHierarchy GetHierarchyByChild(Task child)
     {
-        return _taskHierarchy.First(
+        return _hierarchy.First(
             item => item.Parent.Id == Id && 
             item.Child.Id == child.Id);
     }
@@ -209,6 +229,7 @@ public sealed class Task : AggregateRoot, INamable
         {
             case TaskCreated taskCreated:
             {
+                Id = taskCreated.TaskId;
                 Name = taskCreated.Name;
                 StartDate = taskCreated.StartDate;
                 FinishDate = taskCreated.FinishDate;

@@ -1,8 +1,6 @@
-﻿using System;
+﻿namespace SimpleGantt.Domain.Interfaces;
 
-namespace SimpleGantt.Domain.Interfaces;
-
-public interface IEntity
+public interface IEntity<T>
 {
-    public Guid Id { get; }
+    public T Id { get; }
 }

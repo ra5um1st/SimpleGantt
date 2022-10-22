@@ -2,9 +2,9 @@
 
 namespace SimpleGantt.Domain.Exceptions;
 
-public class EntityExistsException : Exception
+public class DomainExistsException : Exception
 {
-    public EntityExistsException(string entityName) : base($"Entity {entityName} already exists") 
+    public DomainExistsException(string entityName) : base($"Entity {entityName} already exists") 
     {
 
     }

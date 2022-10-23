@@ -8,8 +8,8 @@ using SimpleGantt.Domain.Queries;
 using SimpleGantt.Domain.ValueObjects;
 using static SimpleGantt.Domain.Events.Common.ProjectEvents;
 using static SimpleGantt.Domain.Events.Common.TaskEvents;
-using static SimpleGantt.Domain.Queries.ProjectQueries;
 using static SimpleGantt.Domain.Queries.CommonQueries;
+using static SimpleGantt.Domain.Queries.ProjectQueries;
 
 namespace SimpleGantt.Domain.Entities.Common;
 
@@ -51,6 +51,8 @@ public class Project : AggregateRoot, INamable, ITrackable
 
     public Task CreateTask(TaskCreated taskCreated)
     {
+        if (Id != taskCreated.ProjectId) throw new DomainEventException(nameof(taskCreated));
+
         var task = new Task(taskCreated.TaskId, this, taskCreated.Name, taskCreated.StartDate, taskCreated.FinishDate, taskCreated.CompletionPercentage);
         _tasks.Add(task);
         AddDomainEvent(taskCreated);
@@ -60,14 +62,71 @@ public class Project : AggregateRoot, INamable, ITrackable
 
     public void RemoveTask(TaskRemoved taskRemoved)
     {
-        var task = GetEntityById(_tasks, taskRemoved.TaskId);
-        task.Remove();
+        if (Id != taskRemoved.ProjectId) throw new DomainEventException(nameof(taskRemoved));
+
+        Task task = GetEntityById(_tasks, taskRemoved.TaskId);
         _tasks.Remove(task);
         AddDomainEvent(taskRemoved);
     }
 
+    public void ChangeTaskStartDate(TaskStartDateChanged startDateChanged)
+    {
+        Task task = GetEntityById(_tasks, startDateChanged.TaskId);
+
+        if (task.StartDate == startDateChanged.NewStartDate)
+        {
+            return;
+        }
+
+        task.StartDate = startDateChanged.NewStartDate;
+        AddDomainEvent(startDateChanged);
+    }
+
+    public void ChangeTaskFinishDate(TaskFinishDateChanged finishDateChanged)
+    {
+        Task task = GetEntityById(_tasks, finishDateChanged.TaskId);
+
+        if (task.FinishDate == finishDateChanged.NewFinishDate)
+        {
+            return;
+        }
+
+        task.FinishDate = finishDateChanged.NewFinishDate;
+        AddDomainEvent(finishDateChanged);
+    }
+
+    public void ChangeTaskCompletionPercentage(TaskCompletionPercentageChanged completionPercentageChanged)
+    {
+        // TODO: Add buisness rules for Completion Percentage change
+        Task task = GetEntityById(_tasks, completionPercentageChanged.TaskId);
+
+        if (task.CompletionPercentage == completionPercentageChanged.NewCompletionPercentage)
+        {
+            return;
+        }
+
+        task.CompletionPercentage = completionPercentageChanged.NewCompletionPercentage;
+        AddDomainEvent(completionPercentageChanged);
+    }
+
+    public void ChangeTaskName(TaskNameChanged nameChanged)
+    {
+        Task task = GetEntityById(_tasks, nameChanged.EntityId);
+
+        if (task.Name == nameChanged.NewName)
+        {
+            return;
+        }
+
+        task.Name = nameChanged.NewName;
+        AddDomainEvent(nameChanged);
+    }
+
+
     public Resource CreateResource(ResourceCreated resourceCreated)
     {
+        if (Id != resourceCreated.ProjectId) throw new DomainEventException(nameof(resourceCreated));
+
         var resource = new Resource(resourceCreated.ResourceId, this, resourceCreated.Name, resourceCreated.Count);
         _resources.Add(resource);
         AddDomainEvent(resourceCreated);
@@ -75,16 +134,19 @@ public class Project : AggregateRoot, INamable, ITrackable
         return resource;
     }
 
-    public void RemoveResource(Resource resource)
+    public void RemoveResource(ResourceRemoved resourceRemoved)
     {
+        if (Id != resourceRemoved.ProjectId) throw new DomainEventException(nameof(resourceRemoved));
+
+        var resource = GetEntityById(_resources, resourceRemoved.ResourceId);
         _resources.Remove(resource);
         AddDomainEvent(new ResourceRemoved(Id, resource.Id));
     }
 
     public TaskResource AddResourceToTask(TaskResourceAdded taskResourceAdded)
     {
-        var task = GetEntityById(_tasks, taskResourceAdded.TaskId);
-        var resource = GetEntityById(_resources, taskResourceAdded.ResourceId);
+        Task task = GetEntityById(_tasks, taskResourceAdded.TaskId);
+        Resource resource = GetEntityById(_resources, taskResourceAdded.ResourceId);
         var alreadyAdded = this.GetUsedResourcesAmountById(taskResourceAdded.ResourceId);
 
         if (taskResourceAdded.Count > resource.Count - alreadyAdded)
@@ -102,11 +164,14 @@ public class Project : AggregateRoot, INamable, ITrackable
 
     public void ChangeTaskResourceAmount(TaskResourceAmountChanged amountChanged)
     {
-        if (amountChanged.Count == 0) return;
+        if (amountChanged.Count == 0)
+        {
+            return;
+        }
 
-        var task = GetEntityById(_tasks, amountChanged.TaskId);
-        var resource = GetEntityById(_resources, amountChanged.TaskResourceId);
-        var taskResource = task.Resources.First(item => item.Id == amountChanged.TaskResourceId);
+        Task task = GetEntityById(_tasks, amountChanged.TaskId);
+        Resource resource = GetEntityById(_resources, amountChanged.TaskResourceId);
+        TaskResource taskResource = task.Resources.First(item => item.Id == amountChanged.TaskResourceId);
         var alreadyAdded = this.GetUsedResourcesAmountById(amountChanged.TaskResourceId);
 
         if (amountChanged.Count > 0 && amountChanged.Count > resource.Count - alreadyAdded)
@@ -120,9 +185,9 @@ public class Project : AggregateRoot, INamable, ITrackable
 
     public TaskResource RemoveResourceFromTask(TaskResourceRemoved taskResourceRemoved)
     {
-        var task = GetEntityById(_tasks, taskResourceRemoved.TaskId);
-        var resource = GetEntityById(_tasks, taskResourceRemoved.ResourceId);
-        var taskResource = task.Resources.First(item => item.Id == taskResourceRemoved.TaskResourceId);
+        Task task = GetEntityById(_tasks, taskResourceRemoved.TaskId);
+        Task resource = GetEntityById(_tasks, taskResourceRemoved.ResourceId);
+        TaskResource taskResource = task.Resources.First(item => item.Id == taskResourceRemoved.TaskResourceId);
         task.RemoveTaskResource(taskResource);
         AddDomainEvent(taskResourceRemoved);
 
@@ -135,76 +200,68 @@ public class Project : AggregateRoot, INamable, ITrackable
         {
             case nameof(ConnectionType.StartStart):
             {
-                if (child.StartDate >= parent.StartDate) return;
+                if (child.StartDate >= parent.StartDate)
+                {
+                    return;
+                }
 
-                var difference = parent.StartDate - child.StartDate;
+                TimeSpan difference = parent.StartDate - child.StartDate;
 
                 if (difference > TimeSpan.Zero)
                 {
-                    child.ChangeStartDate(parent.StartDate);
-                    child.ChangeFinishDate(child.FinishDate + difference);
-                }
-                else
-                {
-                    parent.ChangeStartDate(child.StartDate);
-                    parent.ChangeFinishDate(child.FinishDate + difference);
+                    ChangeTaskStartDate(new TaskStartDateChanged(child.Id, parent.StartDate));
+                    ChangeTaskFinishDate(new TaskFinishDateChanged(child.Id, child.FinishDate + difference));
                 }
 
                 break;
             }
             case nameof(ConnectionType.StartFinish):
             {
-                if (child.FinishDate >= parent.StartDate) return;
+                if (child.FinishDate >= parent.StartDate)
+                {
+                    return;
+                }
 
-                var difference = parent.StartDate - child.FinishDate;
+                TimeSpan difference = parent.StartDate - child.FinishDate;
 
                 if (difference > TimeSpan.Zero)
                 {
-                    child.ChangeFinishDate(parent.StartDate);
-                    child.ChangeStartDate(child.StartDate + difference);
-                }
-                else
-                {
-                    parent.ChangeStartDate(child.FinishDate);
-                    parent.ChangeFinishDate(parent.FinishDate + difference);
+                    ChangeTaskStartDate(new TaskStartDateChanged(child.Id, child.StartDate + difference));
+                    ChangeTaskFinishDate(new TaskFinishDateChanged(child.Id, parent.StartDate));
                 }
 
                 break;
             }
             case nameof(ConnectionType.FinishStart):
             {
-                if (child.StartDate >= parent.FinishDate) return;
+                if (child.StartDate >= parent.FinishDate)
+                {
+                    return;
+                }
 
-                var difference = parent.FinishDate - child.StartDate;
+                TimeSpan difference = parent.FinishDate - child.StartDate;
 
                 if (difference > TimeSpan.Zero)
                 {
-                    child.ChangeStartDate(parent.FinishDate);
-                    child.ChangeFinishDate(child.FinishDate + difference);
-                }
-                else
-                {
-                    parent.ChangeStartDate(parent.StartDate + difference);
-                    parent.ChangeFinishDate(child.StartDate);
+                    ChangeTaskStartDate(new TaskStartDateChanged(child.Id, parent.FinishDate));
+                    ChangeTaskFinishDate(new TaskFinishDateChanged(child.Id, child.FinishDate + difference));
                 }
 
                 break;
             }
             case nameof(ConnectionType.FinishFinish):
             {
-                if (child.StartDate >= parent.FinishDate) return;
+                if (child.StartDate >= parent.FinishDate)
+                {
+                    return;
+                }
 
-                var difference = parent.FinishDate - child.FinishDate;
+                TimeSpan difference = parent.FinishDate - child.FinishDate;
 
                 if (difference > TimeSpan.Zero)
                 {
-                    child.ChangeStartDate(child.StartDate + difference);
-                    child.ChangeFinishDate(parent.FinishDate);
-                }
-                else
-                {
-                    parent.ChangeStartDate(parent.StartDate + difference);
-                    parent.ChangeFinishDate(child.StartDate);
+                    ChangeTaskStartDate(new TaskStartDateChanged(child.Id, child.StartDate + difference));
+                    ChangeTaskFinishDate(new TaskFinishDateChanged(child.Id, parent.FinishDate));
                 }
 
                 break;
@@ -216,8 +273,8 @@ public class Project : AggregateRoot, INamable, ITrackable
 
     public TaskConnection AddConnection(ConnectionAdded connectionAdded)
     {
-        var parent = GetEntityById(_tasks, connectionAdded.MainTaskId);
-        var child = GetEntityById(_tasks, connectionAdded.ChildTaskId);
+        Task parent = GetEntityById(_tasks, connectionAdded.MainTaskId);
+        Task child = GetEntityById(_tasks, connectionAdded.ChildTaskId);
 
         if (parent.HasConnectionWithChild(child))
         {
@@ -235,18 +292,17 @@ public class Project : AggregateRoot, INamable, ITrackable
 
     public void RemoveConnection(ConnectionRemoved connectionRemoved)
     {
-        var parent = GetEntityById(_tasks, connectionRemoved.MainTaskId);
-        var child = GetEntityById(_tasks, connectionRemoved.ChildTaskId);
+        Task parent = GetEntityById(_tasks, connectionRemoved.MainTaskId);
+        Task child = GetEntityById(_tasks, connectionRemoved.ChildTaskId);
 
         if (!parent.HasConnectionWithChild(child))
         {
             throw new DomainNotExistException(nameof(child));
         }
 
-        var connection = parent.Connections.First(item => item.Parent.Id == Id && item.Child.Id == child.Id);
+        TaskConnection connection = parent.Connections.First(item => item.Parent.Id == Id && item.Child.Id == child.Id);
         parent.RemoveConnection(connection);
         child.RemoveConnection(connection);
-        ApplyConnection(connection.Parent, connection.Child, connection.ConnectionType);
         AddDomainEvent(connectionRemoved);
     }
 
@@ -262,9 +318,32 @@ public class Project : AggregateRoot, INamable, ITrackable
             }
             case TaskRemoved taskRemoved:
             {
-                var task = _tasks.First(item => item.Id == taskRemoved.TaskId);
+                Task task = GetEntityById(_tasks, taskRemoved.TaskId);
                 _tasks.Remove(task);
-                task.Remove();
+                break;
+            }
+            case TaskNameChanged nameChanged:
+            {
+                Task task = GetEntityById(_tasks, nameChanged.EntityId);
+                task.Name = nameChanged.NewName;
+                break;
+            }
+            case TaskStartDateChanged startDateChanged:
+            {
+                Task task = GetEntityById(_tasks, startDateChanged.TaskId);
+                task.StartDate = startDateChanged.NewStartDate;
+                break;
+            }
+            case TaskFinishDateChanged finishDateChanged:
+            {
+                Task task = GetEntityById(_tasks, finishDateChanged.TaskId);
+                task.FinishDate = finishDateChanged.NewFinishDate;
+                break;
+            }
+            case TaskCompletionPercentageChanged percentageChanged:
+            {
+                Task task = GetEntityById(_tasks, percentageChanged.TaskId);
+                task.CompletionPercentage = percentageChanged.NewCompletionPercentage;
                 break;
             }
             case ResourceCreated resourceCreated:
@@ -275,14 +354,14 @@ public class Project : AggregateRoot, INamable, ITrackable
             }
             case ResourceRemoved resourceRemoved:
             {
-                var resource = _resources.First(item => item.Id == resourceRemoved.ResourceId);
+                Resource resource = _resources.First(item => item.Id == resourceRemoved.ResourceId);
                 _resources.Remove(resource);
                 break;
             }
             case ConnectionAdded connectionAdded:
             {
-                var parent = GetEntityById(_tasks, connectionAdded.MainTaskId);
-                var child = GetEntityById(_tasks, connectionAdded.ChildTaskId);
+                Task parent = GetEntityById(_tasks, connectionAdded.MainTaskId);
+                Task child = GetEntityById(_tasks, connectionAdded.ChildTaskId);
                 var connection = new TaskConnection(connectionAdded.ConnectionId, parent, child, connectionAdded.ConnectionType);
                 parent.AddConnection(connection);
                 child.AddConnection(connection);
@@ -290,17 +369,17 @@ public class Project : AggregateRoot, INamable, ITrackable
             }
             case ConnectionRemoved connectionRemoved:
             {
-                var parent = GetEntityById(_tasks, connectionRemoved.MainTaskId);
-                var child = GetEntityById(_tasks, connectionRemoved.ChildTaskId);
-                var connection = parent.GetConnectionByChild(child);
+                Task parent = GetEntityById(_tasks, connectionRemoved.MainTaskId);
+                Task child = GetEntityById(_tasks, connectionRemoved.ChildTaskId);
+                TaskConnection connection = parent.GetConnectionByChild(child);
                 parent.RemoveConnection(connection);
                 child.RemoveConnection(connection);
                 break;
             }
             case SubtaskAdded subtaskAdded:
             {
-                var parent = GetEntityById(_tasks, subtaskAdded.MainTaskId);
-                var child = GetEntityById(_tasks, subtaskAdded.ChildTaskId);
+                Task parent = GetEntityById(_tasks, subtaskAdded.MainTaskId);
+                Task child = GetEntityById(_tasks, subtaskAdded.ChildTaskId);
                 var hierarchy = new TaskHierarchy(subtaskAdded.HierarchyId, parent, child);
                 parent.AddHierarchy(hierarchy);
                 child.AddHierarchy(hierarchy);
@@ -308,9 +387,9 @@ public class Project : AggregateRoot, INamable, ITrackable
             }
             case SubtaskRemoved subtasRemoved:
             {
-                var parent = GetEntityById(_tasks, subtasRemoved.MainTaskId);
-                var child = GetEntityById(_tasks, subtasRemoved.ChildTaskId);
-                var hierarchy = parent.GetHierarchyByChild(child);
+                Task parent = GetEntityById(_tasks, subtasRemoved.MainTaskId);
+                Task child = GetEntityById(_tasks, subtasRemoved.ChildTaskId);
+                TaskHierarchy hierarchy = parent.GetHierarchyByChild(child);
                 parent.RemoveHierarchy(hierarchy);
                 child.RemoveHierarchy(hierarchy);
                 break;
@@ -323,7 +402,7 @@ public class Project : AggregateRoot, INamable, ITrackable
             }
             case ProjectRemoved projectRemoved:
             {
-                Removed = true;
+                base.Remove();
                 break;
             }
             default:
@@ -333,8 +412,21 @@ public class Project : AggregateRoot, INamable, ITrackable
 
     public override void Remove()
     {
-        Removed = true;
+        base.Remove();
         AddDomainEvent(new ProjectRemoved(Id));
+    }
+
+    public static Project RestoreFrom(IEnumerable<DomainEvent> events)
+    {
+        var project = new Project();
+
+        foreach (DomainEvent @event in events)
+        {
+            project.When(@event);
+            project.Version++;
+        }
+
+        return project;
     }
 
     #endregion

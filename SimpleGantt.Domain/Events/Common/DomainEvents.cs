@@ -5,9 +5,9 @@ namespace SimpleGantt.Domain.Events.Common;
 
 public static class DomainEvents
 {
-    public record NameChanged
+    public abstract record NameChanged
     (
         Guid EntityId,
-        EntityName NewEntityName
+        EntityName NewName
     ) : DomainEvent;
 }

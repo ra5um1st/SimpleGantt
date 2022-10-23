@@ -10,8 +10,8 @@ public abstract class AggregateRoot : Entity
     private readonly HashSet<DomainEvent> _domainEvents = new();
 
     public IReadOnlyCollection<DomainEvent> DomainEvents => _domainEvents;
-    public long Version { get; private set; } = -1;
-    public bool Removed { get; protected set; } = false;
+    public long Version { get; protected set; } = -1;
+    public bool Removed { get; private set; } = false;
 
     public AggregateRoot(Guid id) : base(id) { }
 

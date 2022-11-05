@@ -1,7 +1,7 @@
 ﻿using System;
 using SimpleGantt.Domain.ValueObjects;
 
-namespace SimpleGantt.Domain.Events.Common;
+namespace SimpleGantt.Domain.Events;
 
 public static class DomainEvents
 {
@@ -9,5 +9,10 @@ public static class DomainEvents
     (
         Guid EntityId,
         EntityName NewName
+    ) : DomainEvent;
+
+    public abstract record EntityRemoved
+    (
+        Guid RemovedEntityId
     ) : DomainEvent;
 }

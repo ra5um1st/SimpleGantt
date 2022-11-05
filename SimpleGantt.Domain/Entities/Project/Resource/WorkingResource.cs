@@ -1,5 +1,4 @@
 ﻿using System;
-using SimpleGantt.Domain.Entities.Common;
 using SimpleGantt.Domain.ValueObjects;
 
 namespace SimpleGantt.Domain.Entities;

@@ -8,5 +8,8 @@ namespace SimpleGantt.Domain.Queries;
 public static class CommonQueries
 {
     public static TEntity GetEntityById<TEntity>(IEnumerable<TEntity> entities, Guid id)
-        where TEntity : Entity => entities.First(item => item.Id == id);
+        where TEntity : Entity => entities.Single(item => item.Id == id);
+
+    public static bool HasEntityWithId<TEntity>(IEnumerable<TEntity> entities, Guid id)
+        where TEntity : Entity => entities.Any(item => item.Id == id);
 }

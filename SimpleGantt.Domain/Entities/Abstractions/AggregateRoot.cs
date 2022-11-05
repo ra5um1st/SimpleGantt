@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using SimpleGantt.Domain.Events;
 using SimpleGantt.Domain.Exceptions;
 
@@ -9,19 +10,25 @@ public abstract class AggregateRoot : Entity
 {
     private readonly HashSet<DomainEvent> _domainEvents = new();
 
+    [NotMapped]
     public IReadOnlyCollection<DomainEvent> DomainEvents => _domainEvents;
+
+    [NotMapped]
     public long Version { get; protected set; } = -1;
-    public bool Removed { get; private set; } = false;
+
+    [NotMapped]
+    public bool Removed { get; protected set; } = false;
 
     public AggregateRoot(Guid id) : base(id) { }
 
-    public virtual void Remove()
+    public void Remove()
     {
         if (Removed) throw new DomainException($"Entity with id {Id} has already removed");
+
         Removed = true;
     }
 
-    protected void AddDomainEvent(DomainEvent @event)
+    private void AddDomainEvent(DomainEvent @event)
     {
         if (@event == null)
         {
@@ -32,10 +39,13 @@ public abstract class AggregateRoot : Entity
         Version++;
     }
 
-    public void ClearDomainEvents()
-    {
-        _domainEvents.Clear();
-    }
+    public void ClearDomainEvents() => _domainEvents.Clear();
 
-    protected abstract void When(DomainEvent @event);
+    protected void Apply(DomainEvent @event) => @event.Apply(this);
+    protected object ApplyDomainEvent(DomainEvent @event)
+    {
+        var result = @event.Apply(this);
+        AddDomainEvent(@event);
+        return result;
+    }
 }

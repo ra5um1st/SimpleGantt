@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Data.SqlTypes;
-using SimpleGantt.Domain.Entities.Common;
+using SimpleGantt.Domain.Entities;
 using SimpleGantt.Domain.ValueObjects;
 
 namespace SimpleGantt.Domain.Entities;

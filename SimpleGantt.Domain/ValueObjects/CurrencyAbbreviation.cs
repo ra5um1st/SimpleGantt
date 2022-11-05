@@ -14,7 +14,7 @@ public record CurrencyAbbreviation : IValueObject<string>
         {
             throw new ArgumentNullException(nameof(value));
         }
-        if(value.Length >= _maxLength)
+        if(value.Length > _maxLength)
         {
             throw new ArgumentException($"Currency abbreviation must be less than or equal {_maxLength}");
         }

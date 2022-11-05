@@ -6,7 +6,7 @@ namespace SimpleGantt.Domain.ValueObjects;
 public record class EntityName : IValueObject<string>
 {
     public string Value { get; }
-    private const int _maxLength = 1000;
+    public const int MaxLength = 1000;
 
     public EntityName(string value)
     {
@@ -14,9 +14,9 @@ public record class EntityName : IValueObject<string>
         {
             throw new ArgumentNullException(nameof(value));
         }
-        if(value.Length >= _maxLength)
+        if(value.Length >= MaxLength)
         {
-            throw new ArgumentException($"Length of Entity Name can not be more than {_maxLength}");
+            throw new ArgumentException($"Length of Entity Name can not be more than {MaxLength}");
         }
 
         Value = value;

@@ -1,5 +1,5 @@
 ﻿using System;
-using SimpleGantt.Domain.Entities.Common;
+using SimpleGantt.Domain.Entities;
 
 namespace SimpleGantt.Domain.Entities;
 

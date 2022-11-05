@@ -5,6 +5,7 @@ namespace SimpleGantt.Domain.Events;
 
 public abstract record DomainEvent : INotification
 {
-    public long Id { get; }
     public DateTimeOffset CreatedAt { get; } = DateTimeOffset.Now;
+
+    internal abstract object Apply(object @object);
 }

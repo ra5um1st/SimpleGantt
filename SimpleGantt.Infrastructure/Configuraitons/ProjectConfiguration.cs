@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SimpleGantt.Domain.Entities;
 using SimpleGantt.Domain.ValueObjects;
 
@@ -9,10 +10,15 @@ public class ProjectConfiguration : IEntityTypeConfiguration<Project>
 {
     public void Configure(EntityTypeBuilder<Project> builder)
     {
-        builder.HasMany(e => e.Tasks)
-            .WithOne(e => e.Project);
+        var nameConverter = new ValueConverter<EntityName, string>(c => c.Value, c => new EntityName(c));
 
-        builder.HasMany(e => e.Resources)
-            .WithOne(e => e.Project);
+        builder.HasKey(e => e.Id);
+        builder.Property(e => e.Name).HasConversion(nameConverter).IsRequired();
+        builder
+            .Ignore(e => e.DomainEvents)
+            .Ignore(e => e.Removed)
+            .Ignore(e => e.Tasks)
+            .Ignore(e => e.Resources)
+            .Ignore(e => e.Version);
     }
 }

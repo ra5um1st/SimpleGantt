@@ -9,6 +9,11 @@ public class TaskConnection : Entity
     public Task Child { get; private set; }
     public ConnectionType ConnectionType { get; private set; }
 
+    private TaskConnection() : base(default)
+    {
+
+    }
+
     public TaskConnection(Guid id, Task parent, Task child, ConnectionType connectionType) : base(id)
     {
         Parent = parent ?? throw new ArgumentNullException(nameof(parent));

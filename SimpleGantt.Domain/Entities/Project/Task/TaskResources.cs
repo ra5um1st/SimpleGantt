@@ -10,6 +10,8 @@ public sealed class TaskResource : Entity
     public Resource Resource { get; private set; }
     public double Count { get; private set; }
 
+    private TaskResource() : base(default) { }
+
     internal TaskResource(Guid id, Task task, Resource resource, double count) : base(id)
     {
         Task = task;

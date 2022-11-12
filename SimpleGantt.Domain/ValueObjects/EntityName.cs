@@ -22,6 +22,7 @@ public record class EntityName : IValueObject<string>
         Value = value;
     }
 
+    public override string ToString() => Value;
 
     public static implicit operator string(EntityName entityName) => entityName.Value;
     public static implicit operator EntityName(string value) => new(value);

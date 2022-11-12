@@ -7,6 +7,11 @@ public record Percentage : IValueObject<double>
 {
     public double Value { get; }
 
+    private Percentage()
+    {
+
+    }
+
     public Percentage(double value)
     {
         if (value is < 0 or > 100)

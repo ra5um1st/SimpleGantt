@@ -49,7 +49,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\SimpleGantt.Infrastructure\SimpleGantt.Infrastructure.csproj" />
+	  <ProjectReference Include="..\SimpleGantt.Infrastructure\SimpleGantt.Infrastructure.EntityFramework.csproj" />
 	</ItemGroup>
 
 </Project>

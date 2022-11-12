@@ -65,6 +65,10 @@ public record ConnectionType(EntityName Name) : DomainType(Name)
 
     private readonly Action<TaskConnection> _connectionApplier;
 
+    private ConnectionType() : this("")
+    {
+    }
+
     private ConnectionType(long id, EntityName name, Action<TaskConnection> connectionApplier) : this(name)
     {
         Id = id;

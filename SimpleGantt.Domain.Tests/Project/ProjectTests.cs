@@ -31,7 +31,7 @@ public class ProjectTests
             originalProject.CreateTask(@event);
         }
 
-        var restoredProject = Project.RestoreFrom(originalProject.DomainEvents);
+        var restoredProject = AggregateRoot.RestoreFrom<Project>(originalProject.DomainEvents);
 
         Assert.Equal(originalProject.Name, restoredProject.Name);
         Assert.Equal(originalProject.Version, restoredProject.Version);
@@ -70,7 +70,7 @@ public class ProjectTests
         var childTask = originalProject.CreateTask(new TaskCreated(Guid.Empty, ChildTaskId, "Task 2", Now, Now.AddHours(2), 1));
         originalProject.AddTaskConnection(taskConnectionAdded);
 
-        var restoredProject = Project.RestoreFrom(originalProject.DomainEvents);
+        var restoredProject = AggregateRoot.RestoreFrom<Project>(originalProject.DomainEvents);
 
         Assert.Equal(originalProject.Name, restoredProject.Name);
         Assert.Equal(originalProject.Version, restoredProject.Version);

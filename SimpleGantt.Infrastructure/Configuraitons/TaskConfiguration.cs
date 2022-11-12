@@ -18,7 +18,7 @@ public class TaskConfiguration : IEntityTypeConfiguration<Domain.Entities.Task>
 
         builder.HasOne(e => e.Project)
             .WithMany(e => e.Tasks)
-            .HasForeignKey(e => e.Project.Id)
+            .HasForeignKey(e => e.Id)
             .IsRequired();
 
         builder.Property(e => e.StartDate)

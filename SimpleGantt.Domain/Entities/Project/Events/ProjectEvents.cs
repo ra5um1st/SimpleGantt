@@ -97,7 +97,7 @@ public partial class Project
         {
             var project = (Project)@object;
             project.Id = ProjectId;
-            project.Name = Name;
+            project._name = Name;
             project.CreatedAt = ProjectCreatedAt;
 
             return project;
@@ -113,6 +113,21 @@ public partial class Project
         {
             var project = (Project)@object;
             project.Remove();
+
+            return default!;
+        }
+    }
+
+    public record ProjectNameChanged
+    (
+        Guid ProjectId,
+        EntityName NewName
+    ) : DomainEvent
+    {
+        internal override object Apply(object @object)
+        {
+            var project = (Project)@object;
+            project._name = NewName;
 
             return default!;
         }

@@ -1,51 +1,33 @@
-﻿using System.Reflection;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using SimpleGantt.Domain.Entities;
+using SimpleGantt.Domain.Entities.DomainTypes;
+using SimpleGantt.Infrastructure.Configuraitons;
+using Task = SimpleGantt.Domain.Entities.Task;
 
-namespace SimpleGantt.Infrastructure.Contexts;
+namespace SimpleGantt.Infrastructure.EntityFramework.Contexts;
 
 public class ProjectDbContext : DbContext
 {
-    private readonly IMediator _mediator;
+    public DbSet<Project> Projects => Set<Project>();
+    public DbSet<Task> Tasks => Set<Task>();
+    public DbSet<EventInfo> EventStream => base.Set<EventInfo>();
 
-    public ProjectDbContext(IMediator mediator)
+    public ProjectDbContext()
     {
-        _mediator = mediator;
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
-
+        //modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+        modelBuilder.ApplyConfiguration(new ProjectConfiguration());
+        modelBuilder.ApplyConfiguration(new EventStreamConfiguration());
+        modelBuilder.Ignore<ConnectionType>();
+        modelBuilder.Ignore<Task>();
+        modelBuilder.Ignore<Resource>();
         base.OnModelCreating(modelBuilder);
     }
-
-    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        var aggregateRoots = ChangeTracker
-            .Entries<AggregateRoot>()
-            .Where(entry => entry.Entity.DomainEvents.Any())
-            .Select(entry => entry.Entity);
-
-        var domainEvents = aggregateRoots
-            .SelectMany(item => item.DomainEvents)
-            .ToList();
-
-        var tasks = new List<System.Threading.Tasks.Task>();
-
-        foreach (var aggregateRoot in aggregateRoots)
-        {
-            aggregateRoot.ClearDomainEvents();
-        }
-
-        foreach (var domainEvent in domainEvents)
-        {
-            tasks.Add(_mediator.Publish(domainEvent, cancellationToken));
-        }
-
-        await System.Threading.Tasks.Task.WhenAll(tasks).ConfigureAwait(false);
-
-        return await base.SaveChangesAsync(cancellationToken);
+        optionsBuilder.UseInMemoryDatabase("TestDatabase");
     }
 }

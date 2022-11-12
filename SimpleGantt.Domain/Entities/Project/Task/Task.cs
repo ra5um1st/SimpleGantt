@@ -36,6 +36,11 @@ public sealed class Task : Entity, INamable
     [NotMapped]
     public bool IsMainTask => _hierarchy.Select(item => item.Child.Id != Id).Any();
 
+    private Task() : base(default)
+    {
+
+    }
+
     internal Task(Guid id, Project project, EntityName name, DateTimeOffset startDate, DateTimeOffset finishData, Percentage percentage) : base(id)
     {
         Project = project ?? throw new ArgumentNullException(nameof(Project));
